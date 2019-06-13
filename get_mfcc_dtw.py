@@ -199,7 +199,7 @@ def extract_pitch(wavfile,pitchfile,hop):
     # Extracting pitch
     outputfile = wavfile.replace('.wav','_pitch.wav')
     # pitch_extract_cmd = 'aubiopitch -i '+wavfile+' -p yin > '+pitchfile
-    pitch_extract_cmd = 'Praat.app/Contents/MacOS/Praat --run ExtractPitch.praat '+wavfile+' '+pitchfile+' '+str(pitch_ceiling)+' '+str(hop)
+    pitch_extract_cmd = 'Praat.app\Contents\MacOS\Praat.exe --run ExtractPitch.praat '+wavfile+' '+pitchfile+' '+str(pitch_ceiling)+' '+str(hop)
     os.system(pitch_extract_cmd)
     # pdb.set_trace()
 
@@ -454,7 +454,12 @@ def VibratoFeatureCalc(vibrato_time_stamps,time_pitch,test_flag=0):
 
         ### Likeliness feature
         X = np.abs(fft(pitch_snippet * np.hamming(len(pitch_snippet)), NFFT))
-        Xhalf_norm = X[0:NFFT / 2] / sum(X[0:NFFT / 2])
+        if sum(X[0:NFFT / 2]) == 0:
+            sum_x = 0
+        else:
+            sum_x = sum(X[0:NFFT / 2])
+
+        Xhalf_norm = X[0:NFFT / 2] / sum_x
 
         vib_region = Xhalf_norm[(f >= F_low) & (f <= F_high)]
         vib_power = sum(vib_region)
@@ -531,7 +536,12 @@ def VibratoDetection(time_pitch):
         pitch_snippet = pitch_zeroappended[i:i+win_samples]
         pitch_snippet = pitch_snippet-np.mean(pitch_snippet)
         X = np.abs(fft(pitch_snippet*np.hamming(win_samples),NFFT))
-        Xhalf_norm = X[0:NFFT/2]/sum(X[0:NFFT/2])
+        if sum(X[0:NFFT / 2]) == 0:
+            sum_x = 0
+        else:
+            sum_x = sum(X[0:NFFT / 2])
+
+        Xhalf_norm = X[0:NFFT / 2] / sum_x
 
         vib_region = Xhalf_norm[(f>=5) & (f<=8)]
 
@@ -748,7 +758,7 @@ def ExtractHighPeriodicityPitchFrames(wavfile,hop,highperiodicity_wavfile,period
     infile = wavfile.rstrip('.wav').split(os.sep)[1]
     harmonic_file = runtime_filedumps+os.sep+'harmonics'
     # Extracting periodicity of frames, output file name is "harmonics"
-    harmonicity_extract_cmd = 'Praat.app/Contents/MacOS/Praat --run ExtractHarmonicity.praat ' + infile + ' ' + str(hop)
+    harmonicity_extract_cmd = 'Praat.app\Contents\MacOS\Praat.exe --run ExtractHarmonicity.praat ' + infile + ' ' + str(hop)
     os.system(harmonicity_extract_cmd)
 
     ##Hack for making the weird requirement of the praat script to function in the current directory ## Can be improved!
@@ -893,7 +903,12 @@ def ExtractVibratoFeatures(time_pitch):
 
         ## Interspeech 2006: Nakano: An automatic singing skill evaluation method for unknown melodies using pitch interval and vibrato features
         X = np.abs(fft(pitch_snippet * np.hamming(win_samples), NFFT))
-        Xhalf_norm = X[0:NFFT / 2] / sum(X[0:NFFT / 2])
+        if sum(X[0:NFFT / 2])==0:
+            sum_x =0
+        else:
+            sum_x=sum(X[0:NFFT / 2])
+
+        Xhalf_norm = X[0:NFFT / 2] / sum_x
         vib_region = Xhalf_norm[(f >= F_low) & (f <= F_high)]
         vib_power = sum(vib_region)
         vib_sharp = sum(np.abs(vib_region - np.hstack([vib_region[1:], np.zeros(1)])))
